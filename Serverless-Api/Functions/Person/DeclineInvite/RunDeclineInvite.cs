@@ -37,7 +37,7 @@ namespace Serverless_Api
             if (response.IsOk)
                 return await req.CreateResponse(System.Net.HttpStatusCode.OK, response.SnapshotObj);
 
-            return await req.CreateResponse(System.Net.HttpStatusCode.BadRequest, response.SnapshotObj);
+            return await req.CreateResponse(System.Net.HttpStatusCode.BadRequest, response.MessageEvent);
         }
     }
 }
