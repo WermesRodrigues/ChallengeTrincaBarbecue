@@ -36,7 +36,7 @@ namespace Domain.Entities
 
                 //clear Shop Cart
                 if (BbqShopCart != null)
-                    BbqShopCart.ResetshopCart();
+                    BbqShopCart.ResetShopCart();
             }
 
             if (@event.TrincaWillPay)
@@ -78,7 +78,14 @@ namespace Domain.Entities
             }
 
             if (_totalAccepted < 7)
+            {
                 Status = BbqStatus.PendingConfirmations;
+
+                //check if the totalAccepted is Zero to reset
+                //clear Shop Cart
+                if (BbqShopCart != null && _totalAccepted <= 0)
+                    BbqShopCart.ResetShopCart();
+            }
         }
 
         public object TakeSnapshot()

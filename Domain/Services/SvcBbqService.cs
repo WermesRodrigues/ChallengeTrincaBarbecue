@@ -34,7 +34,7 @@ namespace Domain.Services
                 var isModerator = await _svcpersonService.IsModerator(personId);
 
                 if (!isModerator)
-                    return new BbqEventsResponses("Failed the personId is not a moderator.", false);
+                    return new BbqEventsResponses("Access Denied the personId is not a moderator.", false);
 
                 var bbq = await _bbqRepository.GetAsync(bbqId);
 

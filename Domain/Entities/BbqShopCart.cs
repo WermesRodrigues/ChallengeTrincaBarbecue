@@ -7,6 +7,23 @@ namespace Domain.Entities
 {
     public class BbqShopCart : AggregateRoot
     {
+        
+        public string VeganFoodQuantityInKG
+        {
+            get
+            {
+                return $"{VeganFoodQuantity / 1000} KG";
+            }
+        }
+
+        public string MeatFoodQuantityInKG
+        {
+            get
+            {
+                return $"{MeatFoodQuantity / 1000} KG";
+            }
+        }
+
         public double VeganFoodQuantity { get; set; }
         public double MeatFoodQuantity { get; set; }
 
@@ -17,7 +34,7 @@ namespace Domain.Entities
             MeatFoodQuantity = 0;
         }
 
-        public void ResetshopCart()
+        public void ResetShopCart()
         {
             VeganFoodQuantity = 0;
             MeatFoodQuantity = 0;
