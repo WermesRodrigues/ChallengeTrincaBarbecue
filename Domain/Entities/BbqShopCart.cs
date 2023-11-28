@@ -1,19 +1,28 @@
-﻿using System;
+﻿using Domain.Events;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class BbqShopCart
+    public class BbqShopCart : AggregateRoot
     {
-        public BbqShopCart(string id)
-        {
-            Id = id;
-        }
-
-        public string Id { get; set; }
         public double VeganFoodQuantity { get; set; }
         public double MeatFoodQuantity { get; set; }
+
+        public void When(NewBbqShopCart @event)
+        {
+            Id = @event.Id.ToString();
+            VeganFoodQuantity = 0;
+            MeatFoodQuantity = 0;
+        }
+
+        public void ResetshopCart()
+        {
+            VeganFoodQuantity = 0;
+            MeatFoodQuantity = 0;
+        }
+
 
         public void DecreaseQuantitiesByFoodType(bool isVeg)
         {
@@ -26,6 +35,12 @@ namespace Domain.Entities
                 MeatFoodQuantity -= 300;
                 VeganFoodQuantity -= 300;
             }
+
+            if (VeganFoodQuantity < 0)
+                VeganFoodQuantity = 0;
+
+            if (MeatFoodQuantity < 0)
+                MeatFoodQuantity = 0;
         }
 
         public void IncreaseQuantitiesByFoodType(bool isVeg)
@@ -37,7 +52,7 @@ namespace Domain.Entities
             else
             {
                 MeatFoodQuantity += 300;
-                VeganFoodQuantity += 300;                
+                VeganFoodQuantity += 300;
             }
         }
 

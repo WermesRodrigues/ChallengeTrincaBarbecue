@@ -14,6 +14,7 @@ namespace CrossCutting
             var client = new CosmosClient(Environment.GetEnvironmentVariable(nameof(EventStore)));
 
             client.CreateIfNotExists(DATABASE, "Bbqs").GetAwaiter().GetResult();
+            client.CreateIfNotExists(DATABASE, "BbqShopCart").GetAwaiter().GetResult();
             client.CreateIfNotExists(DATABASE, "People").GetAwaiter().GetResult();
             client.CreateIfNotExists(DATABASE, "Lookups").GetAwaiter().GetResult();
 

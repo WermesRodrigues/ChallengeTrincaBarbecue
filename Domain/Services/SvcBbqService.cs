@@ -14,13 +14,15 @@ namespace Domain.Services
     internal class SvcBbqService : ISvcBbqService
     {
         private readonly IBbqRepository _bbqRepository;
+        private readonly ISvcBbqShopCartService _svcBbqShopCartService;
         private readonly ISvcPersonService _svcpersonService;
         private readonly SnapshotStore _snapshots;
         public async Task<Bbq> GetAsync(string id) => await _bbqRepository.GetAsync(id);
 
-        public SvcBbqService(IBbqRepository bbqRepository, ISvcPersonService svcpersonService, SnapshotStore snapshots)
+        public SvcBbqService(IBbqRepository bbqRepository, ISvcBbqShopCartService svcBbqShopCartService, ISvcPersonService svcpersonService, SnapshotStore snapshots)
         {
             _bbqRepository = bbqRepository;
+            _svcBbqShopCartService = svcBbqShopCartService;
             _svcpersonService = svcpersonService;
             _snapshots = snapshots;
         }
@@ -40,9 +42,13 @@ namespace Domain.Services
                     return new BbqEventsResponses(string.Format("Barbecue not found Id {0}.", bbqId), false);
 
                 if (bbq.BbqShopCart == null)
-                    return new BbqEventsResponses($"The Cart of Barbecue is empty!.", false);
+                {
+                    var bbqShopCart = await _svcBbqShopCartService.GetBarbecueCartShopCart(bbqId);
 
-                return new BbqEventsResponses("Successfully fetched.", true, bbq.BbqShopCart.TakeSnapshot());
+                    bbq.BbqShopCart = bbqShopCart.SnapshotObj as BbqShopCart;
+                }
+
+                return new BbqEventsResponses("Successfully fetched.", true, bbq);
             }
             catch (Exception ex)
             {
@@ -60,6 +66,8 @@ namespace Domain.Services
                 var churras = new Bbq();
 
                 churras.Apply(new ThereIsSomeoneElseInTheMood(Guid.NewGuid(), date, reason, isTrincaPaying));
+
+                await _svcBbqShopCartService.CreateNewShopCartBarbecue(churras.Id);
 
                 await _bbqRepository.SaveAsync(churras);
 
@@ -178,10 +186,14 @@ namespace Domain.Services
                 if (bbq == null)
                     return new BbqEventsResponses(string.Format("Barbecue not found Id {0}.", inviteId), false);
 
-                if (bbq != null && bbq.Status != BbqStatus.PendingConfirmations)
-                    return new BbqEventsResponses(string.Format("The current status of Barbecue is PendingConfirmations yet.", inviteId), false);
-
                 //get Event handle to update the person and the next update the Cart.....
+                if (bbq.BbqShopCart == null)
+                {
+                    var bbqShopCart = await _svcBbqShopCartService.GetBarbecueCartShopCart(bbq.Id);
+
+                    bbq.BbqShopCart = bbqShopCart.SnapshotObj as BbqShopCart;
+                }
+
                 var @event = GetEventHandle(inviteId, personId, isVeg, barbecueInvitationType);
 
                 //send envent by parameters barbecueInvitationType

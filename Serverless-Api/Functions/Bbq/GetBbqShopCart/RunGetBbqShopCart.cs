@@ -6,18 +6,18 @@ using System.Net;
 
 namespace Serverless_Api.Functions.Bbq.GetBbqCart
 {
-    public partial class RunGetBbqCart
+    public partial class RunGetBbqShopCart
     {
         private readonly Person _person;
         private readonly ISvcBbqService _svcbbqService;
 
-        public RunGetBbqCart(Person person, ISvcBbqService svcbbqService)
+        public RunGetBbqShopCart(Person person, ISvcBbqService svcbbqService)
         {
             _person = person;
             _svcbbqService = svcbbqService;
         }
 
-        [Function(nameof(RunGetBbqCart))]
+        [Function(nameof(RunGetBbqShopCart))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "churras/{bbqId}/cart")] HttpRequestData req, string bbqId)
         {
             //check if is null to return....

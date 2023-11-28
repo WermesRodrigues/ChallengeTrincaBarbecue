@@ -30,9 +30,12 @@ namespace Domain
             var bbqStore = new EventStore<Bbq>(client, DATABASE, "Bbqs");
             bbqStore.Initialize().GetAwaiter().GetResult();
 
+            var bbqShopCartStore = new EventStore<BbqShopCart>(client, DATABASE, "BbqShopCart");
+            bbqShopCartStore.Initialize().GetAwaiter().GetResult();
+
             var peopleStore = new EventStore<Person>(client, DATABASE, "People");
             peopleStore.Initialize().GetAwaiter().GetResult();
-
+            
             var snapshots = new SnapshotStore(client.GetDatabase(DATABASE));
 
             client.GetDatabase(DATABASE)
@@ -58,6 +61,7 @@ namespace Domain
             services.AddSingleton(snapshots);
 
             services.AddSingleton<IEventStore<Bbq>>(bbqStore);
+            services.AddSingleton<IEventStore<BbqShopCart>>(bbqShopCartStore);
             services.AddSingleton<IEventStore<Person>>(peopleStore);
 
             return services;
@@ -66,13 +70,15 @@ namespace Domain
         #region RegisterServices
         public static IServiceCollection AddServicesDependencies(this IServiceCollection services)
             => services.AddTransient<ISvcBbqService, SvcBbqService>()
+                .AddTransient<ISvcBbqShopCartService, SvcBbqShopCartService>()
                .AddTransient<ISvcPersonService, SvcPersonService>();
         #endregion
 
         #region RegisterRepositories
         public static IServiceCollection AddRepositoriesDependencies(this IServiceCollection services)
             => services.AddTransient<IBbqRepository, BbqRepository>()
-            .AddTransient<IPersonRepository, PersonRepository>();
+             .AddTransient<IBbqShopCartRepository, BbqShopCartRepository>()
+             .AddTransient<IPersonRepository, PersonRepository>();
         #endregion
 
         private async static Task CreateIfNotExists(this CosmosClient client, string database, string collection)

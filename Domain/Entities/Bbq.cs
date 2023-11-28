@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Domain.Events;
 
 namespace Domain.Entities
@@ -12,7 +13,7 @@ namespace Domain.Entities
         public DateTime Date { get; set; }
         public bool IsTrincasPaying { get; set; }
         private int _totalAccepted => InvitationsAccepted.Count;
-        public BbqShopCart? BbqShopCart { get; set; }
+        public BbqShopCart? BbqShopCart { get; set; } = new BbqShopCart();
         public List<string> InvitationsAccepted { get; set; } = new List<string>();
 
         public void When(ThereIsSomeoneElseInTheMood @event)
@@ -23,29 +24,32 @@ namespace Domain.Entities
             Status = BbqStatus.New;
         }
 
-
         internal void When(BbqStatusUpdated @event)
         {
             if (@event.GonnaHappen)
+            {
                 Status = BbqStatus.PendingConfirmations;
+            }
             else
+            {
                 Status = BbqStatus.ItsNotGonnaHappen;
+
+                //clear Shop Cart
+                if (BbqShopCart != null)
+                    BbqShopCart.ResetshopCart();
+            }
 
             if (@event.TrincaWillPay)
                 IsTrincasPaying = true;
         }
 
-
         internal void When(InviteWasAccepted @event)
         {
-            //check if is new 
-            if (BbqShopCart == null)
-                BbqShopCart = new BbqShopCart(@event.InviteId);
-            
             ///check if the person not accepet to not duplicate....
             if (!InvitationsAccepted.Any(w => w.Equals(@event.PersonId)))
             {
-                BbqShopCart.IncreaseQuantitiesByFoodType(@event.IsVeg);
+                if (BbqShopCart != null)
+                    BbqShopCart.IncreaseQuantitiesByFoodType(@event.IsVeg);
 
                 InvitationsAccepted.Add(@event.PersonId);
             }
@@ -63,17 +67,14 @@ namespace Domain.Entities
             //Se ao rejeitar, o número de pessoas confirmadas no churrasco for menor que sete,
             //o churrasco deverá ter seu status atualizado para “Pendente de confirmações”. 
 
-            //check if is new 
-            if (BbqShopCart == null)
-                BbqShopCart = new BbqShopCart(@event.InviteId);
-
             //check if the person was accepted to decline....
             if (InvitationsAccepted.Any(w => w.Equals(@event.PersonId)))
             {
-                InvitationsAccepted.Remove(@event.PersonId);
+                if (BbqShopCart != null)
+                    //decrease food....
+                    BbqShopCart.DecreaseQuantitiesByFoodType(@event.IsVeg);
 
-                //decrease food....
-                BbqShopCart.DecreaseQuantitiesByFoodType(@event.IsVeg);
+                InvitationsAccepted.Remove(@event.PersonId);
             }
 
             if (_totalAccepted < 7)
